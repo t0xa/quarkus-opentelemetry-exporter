@@ -37,7 +37,8 @@ public class GcpExporterConfig {
         /**
          * Support for Cloud Run environments. Set to `true` for Cloud Run deployments.
          * <p>
-         * Cloud Run <a href="https://cloud.google.com/trace/docs/setup/java-ot#export">doesn't support background processes</a> and `SimpleSpanProcessor` must be used.
+         * Cloud Run <a href="https://cloud.google.com/trace/docs/setup/java-ot#export">doesn't support background processes</a>
+         * and `SimpleSpanProcessor` must be used.
          */
         @ConfigItem(defaultValue = "false")
         public Boolean cloudrun;
