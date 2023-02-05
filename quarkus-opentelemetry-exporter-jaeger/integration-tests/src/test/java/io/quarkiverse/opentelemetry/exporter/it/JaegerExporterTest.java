@@ -4,13 +4,14 @@ import static io.restassured.RestAssured.get;
 import static io.restassured.RestAssured.given;
 import static org.hamcrest.CoreMatchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.awaitility.Awaitility;
-import org.eclipse.microprofile.config.inject.ConfigProperty;
 import org.junit.jupiter.api.Test;
 
 import io.quarkus.test.common.QuarkusTestResource;
@@ -23,9 +24,7 @@ import io.restassured.common.mapper.TypeRef;
 public class JaegerExporterTest {
 
     public static final String SERVICE_NAME = "opentelemetry-exporter-jaeger-integration-test";
-
-    @ConfigProperty(name = "quarkus.jaeger.port")
-    String jaegerPort;
+    public static final String BASE_URI = "http://localhost";
 
     @ConfigProperty(name = "quarkus.jaeger.host")
     String jaegerHost;
@@ -48,6 +47,14 @@ public class JaegerExporterTest {
 
     @Test
     public void jaegerExtensionTest() {
+        // native test needs to get port from inside the app.
+        String jaegerPort = given()
+                .contentType("application/json")
+                .when().get("/get-port")
+                .then()
+                .statusCode(200)
+                .extract().as(String.class);
+
         given()
                 .contentType("application/json")
                 .when().get("/direct")
@@ -56,19 +63,34 @@ public class JaegerExporterTest {
                 .body("message", equalTo("Direct trace"));
 
         RestAssured.port = Integer.parseInt(jaegerPort);
-        RestAssured.baseURI = String.format("http://%s", jaegerHost);
+        RestAssured.baseURI = BASE_URI;
 
         Awaitility.await()
                 .atMost(Duration.ofSeconds(30))
                 .until(() -> ((List) getJaegerTrace().get("data")).size() > 0);
 
-        final List data = (List) getJaegerTrace().get("data");
-        final Map<String, Object> actual = (Map<String, Object>) data.get(0);
-        final List spans = (List) actual.get("spans");
+        final List traces = (List) getJaegerTrace().get("data");
 
-        assertEquals(1, data.size());
+        assertEquals(2, traces.size());
+        final Map<String, Object> getPortTrace = getTrace(traces, "/get-port");
+        assertTrace(getPortTrace);
+        final Map<String, Object> directTrace = getTrace(traces, "/direct");
+        assertTrace(directTrace);
+    }
+
+    private Map<String, Object> getTrace(final List data, final String operationNameValue) {
+        return (Map<String, Object>) data.stream()
+                .filter(entry -> ((Map<String, Object>) ((List) ((Map<String, Object>) entry)
+                        .get("spans")).get(0))
+                        .get("operationName").equals("/direct"))
+                .findFirst()
+                .orElse(Optional.empty());
+    }
+
+    private void assertTrace(final Map<String, Object> trace) {
+        assertFalse(trace.isEmpty(), "trace cannot be empty");
+        List spans = (List) trace.get("spans");
         assertEquals(1, spans.size());
-        assertEquals("/direct", ((Map<String, Object>) spans.get(0)).get("operationName"));
     }
 
 }
