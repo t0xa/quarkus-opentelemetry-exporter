@@ -12,3 +12,4 @@ buildNumber.properties
 /.idea/.gitignore
 /.idea/
 /docs/modules/ROOT/pages/includes/
+*.iml
