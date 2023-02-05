@@ -27,9 +27,6 @@ public class JaegerExporterTest {
     public static final String SERVICE_NAME = "opentelemetry-exporter-jaeger-integration-test";
     public static final String BASE_URI = "http://localhost";
 
-    @ConfigProperty(name = "quarkus.jaeger.host")
-    String jaegerHost;
-
     /**
      * Response format example:
      * result = {LinkedHashMap@11959} size = 5
