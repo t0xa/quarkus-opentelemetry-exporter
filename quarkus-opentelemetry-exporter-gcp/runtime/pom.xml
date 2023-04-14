@@ -30,10 +30,6 @@
       <artifactId>quarkus-opentelemetry</artifactId>
     </dependency>
     <dependency>
-      <groupId>io.quarkus</groupId>
-      <artifactId>quarkus-grpc-common</artifactId>
-    </dependency>
-    <dependency>
       <groupId>com.google.cloud.opentelemetry</groupId>
       <artifactId>exporter-trace</artifactId>
       <version>${gcp-opentelemetry.version}</version>
@@ -46,17 +42,22 @@
           <groupId>com.google.api</groupId>
           <artifactId>gax</artifactId>
         </exclusion>
+        <!-- We exclude the grpc-netty-shaded library and include only the grpc-netty
+                one (coming from quarkus-google-cloud-common-grpc) as netty is already included with Quarkus -->
+        <exclusion>
+          <groupId>io.grpc</groupId>
+          <artifactId>grpc-netty-shaded</artifactId>
+        </exclusion>
       </exclusions>
     </dependency>
     <dependency>
-      <groupId>com.google.api</groupId>
-      <artifactId>gax-grpc</artifactId>
-      <version>${gax-grpc.version}</version>
+      <groupId>io.quarkiverse.googlecloudservices</groupId>
+      <artifactId>quarkus-google-cloud-common-grpc</artifactId>
+      <version>${quarkus-google-cloud-common-grpc.version}</version>
     </dependency>
     <dependency>
-      <groupId>com.google.api</groupId>
-      <artifactId>gax</artifactId>
-      <version>${gax-grpc.version}</version>
+      <groupId>io.quarkus</groupId>
+      <artifactId>quarkus-grpc-common</artifactId>
     </dependency>
     <dependency>
       <groupId>io.opentelemetry</groupId>
